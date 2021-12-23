@@ -68,8 +68,10 @@ class Player(pygame.sprite.Sprite):
             tile_width * pos_x + 15, tile_height * pos_y + 5)
 
     def update(self, new_x, new_y):
+        print(level[new_y][new_x])
         if level[new_y][new_x] != '#':
             self.rect = self.rect.move(0, tile_height)
+            self.rect.y = self.rect.y + 30
 
 
 def terminate():
@@ -103,7 +105,7 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = 5
+        self.dx = 2
         self.dy = 0
         new = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
@@ -133,11 +135,17 @@ def start_screen():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
-            elif event.type == pygame.KEYDOWN or \
-                    event.type == pygame.MOUSEBUTTONDOWN:
+            elif (event.type == pygame.KEYDOWN or \
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
                 game_begin = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                player.update()
+                player.rect.y += 80
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                player.rect.y -= 80
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                player.rect.x -= 200
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                player.rect.x += 200
 
         if game_begin:
             screen.fill('white')
