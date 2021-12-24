@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-FPS = 30
+FPS = 300
 SIZE = WIDTH, HEIGHT = 1024, 768
 pygame.init()
 
@@ -105,7 +105,7 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = 2
+        self.dx = -2
         self.dy = 0
         new = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
