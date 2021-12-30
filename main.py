@@ -158,7 +158,6 @@ def start_screen():
                 player.rect.x -= 200
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
                 player.rect.x += 200
-
         if game_begin:
             screen.fill('white')
             camera.update(player)
