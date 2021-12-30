@@ -31,7 +31,6 @@ tile_images = {
     'wall': load_image('box.png'),
     'empty': load_image('grass.png')
 }
-player_image = load_image('mario.png')
 
 tile_width = 200
 tile_height = 100
@@ -63,15 +62,27 @@ class Tile(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = player_image
+        self.image = load_image('cat_anim.png')
         self.rect = self.image.get_rect().move(
             tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.frames = []
+        self.cut_sheet(self.image, 3, 4)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(pos_x, pos_y)
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, (sheet.get_width() // columns) - 20,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
 
     def update(self, new_x, new_y):
-        print(level[new_y][new_x])
-        if level[new_y][new_x] != '#':
-            self.rect = self.rect.move(0, tile_height)
-            self.rect.y = self.rect.y + 30
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
 
 
 def terminate():
@@ -105,7 +116,7 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = 2
+        self.dx = -6
         self.dy = 0
         new = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
@@ -132,6 +143,7 @@ def start_screen():
     camera = Camera()
     game_begin = False
     while True:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -149,10 +161,11 @@ def start_screen():
 
         if game_begin:
             screen.fill('white')
-            camera.update(player);
+            camera.update(player)
             # обновляем положение всех спрайтов
             for sprite in all_sprites:
                 camera.apply(sprite)
+            all_sprites.update(player.rect.x, player.rect.y)
             all_sprites.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
