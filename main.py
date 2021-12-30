@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-FPS = 30
+FPS = 60
 SIZE = WIDTH, HEIGHT = 1024, 768
 pygame.init()
 
@@ -46,7 +46,7 @@ def generate_level(level):
                 Tile('wall', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(x, y)
+                new_player = Player(x, y + 100)
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
 
@@ -74,8 +74,8 @@ class Player(pygame.sprite.Sprite):
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, (sheet.get_width() // columns) - 20,
                                 sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
+        for i in range(columns):
+            for j in range(rows):
                 frame_location = (self.rect.w * i, self.rect.h * j)
                 self.frames.append(sheet.subsurface(pygame.Rect(
                     frame_location, self.rect.size)))
@@ -83,6 +83,7 @@ class Player(pygame.sprite.Sprite):
     def update(self, new_x, new_y):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
+        player.rect.x += 24
 
 
 def terminate():
@@ -121,12 +122,53 @@ class Camera:
         new = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
 
+
+class Particle(pygame.sprite.Sprite):
+    # сгенерируем частицы разного размера
+    fire = [load_image("star.png")]
+    for scale in (5, 10, 20):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(all_sprites)
+        self.image = random.choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        # у каждой частицы своя скорость — это вектор
+        self.velocity = [dx, dy]
+        # и свои координаты
+        self.rect.x, self.rect.y = pos
+
+        # гравитация будет одинаковой (значение константы)
+        self.gravity = GRAVITY
+
+    def update(self):
+        # применяем гравитационный эффект:
+        # движение с ускорением под действием гравитации
+        self.velocity[1] += self.gravity
+        # перемещаем частицу
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        # убиваем, если частица ушла за экран
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
+
+    def create_particles(position):
+        # количество создаваемых частиц
+        particle_count = 20
+        # возможные скорости
+        numbers = range(-5, 6)
+        for _ in range(particle_count):
+            Particle(position, random.choice(numbers), random.choice(numbers))
+
+
+
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
                   "Кот бежит по крыше",
-                  "уворачивайтесь от препядствий посредством прыжка",
-                  "Удачи"]
+                  "уворачивайтесь от препятствий посредством прыжка",
+                  "Удачи!"]
 
     fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
@@ -142,7 +184,10 @@ def start_screen():
         screen.blit(string_rendered, intro_rect)
     camera = Camera()
     game_begin = False
+    k = 0
     while True:
+        if k == 1000:
+            k = 0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -154,18 +199,17 @@ def start_screen():
                 player.rect.y += 80
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 player.rect.y -= 80
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                player.rect.x -= 200
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                player.rect.x += 200
+
         if game_begin:
             screen.fill('white')
             camera.update(player)
             # обновляем положение всех спрайтов
             for sprite in all_sprites:
                 camera.apply(sprite)
-            all_sprites.update(player.rect.x, player.rect.y)
+            if k % 4 == 0:
+                all_sprites.update(player.rect.x, player.rect.y)
             all_sprites.draw(screen)
+            k += 1
         pygame.display.flip()
         clock.tick(FPS)
 
