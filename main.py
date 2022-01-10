@@ -46,7 +46,7 @@ def generate_level(level):
                 Tile('wall', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(x, y + 100)
+                new_player = Player(x, y)
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
 
