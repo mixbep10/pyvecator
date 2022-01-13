@@ -6,6 +6,7 @@ import pygame
 
 FPS = 60
 SIZE = WIDTH, HEIGHT = 1024, 768
+a, b = WIDTH, HEIGHT
 pygame.init()
 jump_1 = 'jump1.mp3'
 jump_2 = 'jump2.mp3'
@@ -165,6 +166,14 @@ class Particle(pygame.sprite.Sprite):
             Particle(position, random.choice(numbers), random.choice(numbers))
 
 
+class Ship(pygame.sprite.Sprite):
+    def __init__(self, image_file, location):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('data/' + image_file)
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = location
+
+
 def start_screen():
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
@@ -187,6 +196,7 @@ def start_screen():
     camera = Camera()
     game_begin = False
     k = 0
+    ship = Ship("fon.jpg", [0, 0])
     while True:
         if k == 1000:
             k = 0
@@ -212,6 +222,8 @@ def start_screen():
 
         if game_begin:
             screen.fill('white')
+            all_sprites.draw(screen)
+            screen.blit(ship.image, ship.rect)
             camera.update(player)
             # обновляем положение всех спрайтов
             for sprite in all_sprites:
