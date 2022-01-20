@@ -30,6 +30,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 player = None
+fish = None
 
 tile_images = {
     'wall': load_image('box.png'),
@@ -41,7 +42,7 @@ tile_height = 100
 
 
 def generate_level(level):
-    new_player, x, y = None, None, None
+    new_player, fish, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -50,7 +51,9 @@ def generate_level(level):
                 Tile('wall', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(x, y + 100)
+                new_player = Player(x, y + 20)
+                fish = Fish(x, y)
+
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
 
@@ -61,6 +64,13 @@ class Tile(pygame.sprite.Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
+
+
+class Fish(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
+        self.rect = self.image.get_rect().move(len(level[0]) * 200, 20)
 
 
 class Player(pygame.sprite.Sprite):
@@ -93,6 +103,70 @@ class Player(pygame.sprite.Sprite):
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+def end_level1():
+    intro_text = ["Отлично!", "",
+                  "Первый уровень",
+                  "успешно пройден!",
+                  "если готовы продолжить,",
+                  "нажмите любую кнопку"]
+
+    fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    camera = Camera()
+    game_begin = False
+    k = 0
+    ship = Ship("fon.jpg", [0, 0])
+    while True:
+        if k == 1000:
+            k = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif (event.type == pygame.KEYDOWN or \
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
+                game_begin = True
+
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                sound_jump_down = pygame.mixer.Sound(jump_2)
+                player.rect.y += 120
+                pygame.mixer.music.pause()
+                sound_jump_down.play()
+                pygame.mixer.music.unpause()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                sound_jump_up = pygame.mixer.Sound(jump_1)
+                player.rect.y -= 120
+                pygame.mixer.music.pause()
+                sound_jump_up.play()
+                pygame.mixer.music.unpause()
+
+        if game_begin:
+            if fish.rect.x <= 0:
+                end_level()
+            screen.fill('white')
+            all_sprites.draw(screen)
+            screen.blit(ship.image, ship.rect)
+            camera.update(player)
+            # обновляем положение всех спрайтов
+            for sprite in all_sprites:
+                camera.apply(sprite)
+            if k % 4 == 0:
+                all_sprites.update(player.rect.x, player.rect.y)
+            all_sprites.draw(screen)
+            k += 1
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def load_level(filename):
@@ -199,7 +273,6 @@ def start_screen():
     while True:
         if k == 1000:
             k = 0
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -209,18 +282,20 @@ def start_screen():
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
                 sound_jump_down = pygame.mixer.Sound(jump_2)
-                player.rect.y += 80
+                player.rect.y += 120
                 pygame.mixer.music.pause()
                 sound_jump_down.play()
                 pygame.mixer.music.unpause()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
-                player.rect.y -= 80
+                player.rect.y -= 120
                 pygame.mixer.music.pause()
                 sound_jump_up.play()
                 pygame.mixer.music.unpause()
 
         if game_begin:
+            if fish.rect.x <= 0:
+                end_level1()
             screen.fill('white')
             all_sprites.draw(screen)
             screen.blit(ship.image, ship.rect)
@@ -240,4 +315,5 @@ if __name__ == '__main__':
     level = load_level('level_1.map')
     print(level)
     player, level_x, level_y = generate_level(level)
+    fish = Fish(0, 0)
     start_screen()
