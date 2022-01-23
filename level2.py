@@ -5,7 +5,6 @@ import pygame
 
 
 def level_2(load_image, generate_level, Tile, Fish, Player, terminate, end_level1, load_level, Camera, Particle, Ship, start_screen):
-    FPS = 1000
     SIZE = WIDTH, HEIGHT = 1024, 768
     a, b = WIDTH, HEIGHT
     pygame.init()
