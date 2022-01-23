@@ -19,6 +19,7 @@ clock = pygame.time.Clock()
 jump_max = 20
 jump_count = 0
 Jump = False
+cam_speed = -6
 
 
 def load_image(name, colorkey=None):
@@ -151,6 +152,7 @@ def end_level1():
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
                 end_level()
+                cam_speed = cam_speed * 16
                 level = load_level('level_2.map')
                 print(level)
                 player, level_x, level_y = generate_level(level)
@@ -188,7 +190,7 @@ class Camera:
 
     # позиционировать камеру на объекте target
     def update(self, target):
-        self.dx = -6
+        self.dx = cam_speed
         self.dy = 0
         new = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
 
@@ -233,7 +235,7 @@ class Particle(pygame.sprite.Sprite):
 
 
 class Ship(pygame.sprite.Sprite):
-    def __init__(self, image_file, location):
+    def __init__(self, image_file, location, ):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load('data/' + image_file)
         self.rect = self.image.get_rect()
@@ -308,6 +310,7 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
+cam_speed = cam_speed * 2
 
 if __name__ == '__main__':
     level = load_level('level_1.map')
