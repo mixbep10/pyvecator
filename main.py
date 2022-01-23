@@ -3,7 +3,9 @@ import random
 import sys
 import pygame
 
-FPS = 60
+from level2 import level_2
+
+FPS = 1000
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -109,8 +111,11 @@ def terminate():
 
 
 def end_level():
-    print('К сожалению вы прошли всю игру')
-    terminate()
+    level = load_level('level_2.map')
+    print(level)
+    player, level_x, level_y = generate_level(level)
+    fish = Fish(0, 0)
+    start_screen()
 
 
 def end_level1():
@@ -136,6 +141,7 @@ def end_level1():
     game_begin = False
     k = 0
     ship = Ship("fon.jpg", [0, 0])
+    Jump = False
     while True:
         if k == 1000:
             k = 0
@@ -144,45 +150,14 @@ def end_level1():
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
-                game_begin = True
-
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                sound_jump_down = pygame.mixer.Sound(jump_2)
-                player.rect.y += 120
-                pygame.mixer.music.pause()
-                sound_jump_down.play()
-                pygame.mixer.music.unpause()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                sound_jump_up = pygame.mixer.Sound(jump_1)
-                pygame.mixer.music.pause()
-                sound_jump_up.play()
-                pygame.mixer.music.unpause()
-                if Jump is False:
-                    Jump = True
-                    jump_count = jump_max
-
-
-
-        if game_begin:
-            if fish.rect.x <= 0:
                 end_level()
-            if Jump is True:
-                player.rect.y -= jump_count
-                if jump_count <= -jump_max:
-                    jump_count -= 1
-                else:
-                    Jump = False
-            screen.fill('white')
-            all_sprites.draw(screen)
-            screen.blit(ship.image, ship.rect)
-            camera.update(player)
-            # обновляем положение всех спрайтов
-            for sprite in all_sprites:
-                camera.apply(sprite)
-            if k % 4 == 0:
-                all_sprites.update(player.rect.x, player.rect.y)
-            all_sprites.draw(screen)
-            k += 1
+                level = load_level('level_2.map')
+                print(level)
+                player, level_x, level_y = generate_level(level)
+                fish = Fish(0, 0)
+                start_screen()
+
+
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -289,6 +264,7 @@ def start_screen():
     game_begin = False
     k = 0
     ship = Ship("fon.jpg", [0, 0])
+    fish = Fish(0, 0)
     while True:
         if k == 1000:
             k = 0
@@ -299,12 +275,7 @@ def start_screen():
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
                 game_begin = True
 
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                sound_jump_down = pygame.mixer.Sound(jump_2)
-                player.rect.y += 120
-                pygame.mixer.music.pause()
-                sound_jump_down.play()
-                pygame.mixer.music.unpause()
+
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
                 if Jump is False:
