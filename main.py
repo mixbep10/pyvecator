@@ -5,7 +5,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 1000
+FPS = 120
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -20,6 +20,8 @@ jump_max = 20
 jump_count = 0
 Jump = False
 cam_speed = -6
+k = 1.2
+
 
 
 def load_image(name, colorkey=None):
@@ -116,6 +118,7 @@ def end_level():
     print(level)
     player, level_x, level_y = generate_level(level)
     fish = Fish(0, 0)
+    player.kill()
     start_screen()
 
 
@@ -310,7 +313,9 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
-cam_speed = cam_speed * 2
+k = k ** 2
+cam_speed = cam_speed
+
 
 if __name__ == '__main__':
     level = load_level('level_1.map')
