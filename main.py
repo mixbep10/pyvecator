@@ -3,7 +3,7 @@ import random
 import sys
 import pygame
 
-FPS = 5
+FPS = 60
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -73,7 +73,7 @@ class Fish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
-        self.rect = self.image.get_rect().move(len(level[0]) * tile_width, 190)
+        self.rect = self.image.get_rect().move(len(level[0]) * tile_width, 400)
 
 
 class Player(pygame.sprite.Sprite):
@@ -157,8 +157,9 @@ def end_level1():
                 pygame.mixer.music.pause()
                 sound_jump_up.play()
                 pygame.mixer.music.unpause()
-                Jump = True
-                jump_count = jump_max
+                if Jump is False:
+                    Jump = True
+                    jump_count = jump_max
 
 
 
@@ -306,11 +307,12 @@ def start_screen():
                 pygame.mixer.music.unpause()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
-                pygame.mixer.music.pause()
-                sound_jump_up.play()
-                pygame.mixer.music.unpause()
-                Jump = True
-                jump_count = jump_max
+                if Jump is False:
+                    pygame.mixer.music.pause()
+                    sound_jump_up.play()
+                    pygame.mixer.music.unpause()
+                    Jump = True
+                    jump_count = jump_max
 
         if game_begin:
             if fish.rect.x <= 0:
