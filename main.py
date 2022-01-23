@@ -259,7 +259,7 @@ class Ship(pygame.sprite.Sprite):
 
 def start_screen():
     global Jump, jump_count
-    intro_text = ["ЗАГРУЗКА", "",
+    intro_text = ["ЗАГРУЗКА2", "",
                   "Правила игры",
                   "Кот бежит по крыше",
                   "уворачивайтесь от препятствий посредством прыжка",
