@@ -55,7 +55,7 @@ def generate_level(level):
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
-                Tile('enemy',x,y)
+                Tile('enemy', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y + 370)
@@ -165,8 +165,6 @@ def end_level1():
                 if Jump is False:
                     Jump = True
                     jump_count = jump_max
-
-
 
         if game_begin:
             if fish.rect.x <= 0:
