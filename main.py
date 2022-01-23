@@ -3,7 +3,7 @@ import random
 import sys
 import pygame
 
-FPS = 60
+FPS = 5
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -14,6 +14,9 @@ pygame.mixer.music.load(main_track)
 pygame.mixer.music.play()
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
+jump_max = 20
+jump_count = 0
+Jump = False
 
 
 def load_image(name, colorkey=None):
@@ -38,7 +41,7 @@ tile_images = {
 }
 
 tile_width = 200
-tile_height = 100
+tile_height = 55
 
 
 def generate_level(level):
@@ -51,7 +54,7 @@ def generate_level(level):
                 Tile('wall', x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(x, y + 20)
+                new_player = Player(x, y + 370)
                 fish = Fish(x, y)
 
     # вернем игрока, а также размер поля в клетках
@@ -63,14 +66,14 @@ class Tile(pygame.sprite.Sprite):
         super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
+            tile_width * pos_x, tile_height * pos_y + 400)
 
 
 class Fish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
-        self.rect = self.image.get_rect().move(len(level[0]) * 200, 20)
+        self.rect = self.image.get_rect().move(len(level[0]) * tile_width, 190)
 
 
 class Player(pygame.sprite.Sprite):
@@ -151,14 +154,23 @@ def end_level1():
                 pygame.mixer.music.unpause()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
-                player.rect.y -= 120
                 pygame.mixer.music.pause()
                 sound_jump_up.play()
                 pygame.mixer.music.unpause()
+                Jump = True
+                jump_count = jump_max
+
+
 
         if game_begin:
             if fish.rect.x <= 0:
                 end_level()
+            if Jump is True:
+                player.rect.y -= jump_count
+                if jump_count <= -jump_max:
+                    jump_count -= 1
+                else:
+                    Jump = False
             screen.fill('white')
             all_sprites.draw(screen)
             screen.blit(ship.image, ship.rect)
@@ -253,6 +265,7 @@ class Ship(pygame.sprite.Sprite):
 
 
 def start_screen():
+    global Jump, jump_count
     intro_text = ["ЗАСТАВКА", "",
                   "Правила игры",
                   "Кот бежит по крыше",
@@ -293,14 +306,21 @@ def start_screen():
                 pygame.mixer.music.unpause()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
-                player.rect.y -= 120
                 pygame.mixer.music.pause()
                 sound_jump_up.play()
                 pygame.mixer.music.unpause()
+                Jump = True
+                jump_count = jump_max
 
         if game_begin:
             if fish.rect.x <= 0:
                 end_level1()
+            if Jump is True:
+                player.rect.y -= jump_count
+                if jump_count > -jump_max:
+                    jump_count -= 1
+                else:
+                    Jump = False
             screen.fill('white')
 
             screen.blit(ship.image, ship.rect)
