@@ -5,7 +5,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 120
+FPS = 60
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -18,10 +18,10 @@ screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 jump_max = 20
 jump_count = 0
+Health = 9
 Jump = False
 cam_speed = -6
 k = 1.2
-
 
 
 def load_image(name, colorkey=None):
@@ -57,6 +57,8 @@ def generate_level(level):
                 Tile('empty', x, y)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
+            elif level[y][x] == '$':
+                Enemy(x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(x, y + 370)
@@ -64,6 +66,14 @@ def generate_level(level):
 
     # вернем игрока, а также размер поля в клетках
     return new_player, x, y
+
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.image = pygame.transform.scale(load_image('dog.png'), (150, 100))
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y + 370)
 
 
 class Tile(pygame.sprite.Sprite):
@@ -77,7 +87,7 @@ class Tile(pygame.sprite.Sprite):
 class Fish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
+        self.image = pygame.transform.scale(load_image('fish.png'), (75, 50))
         self.rect = self.image.get_rect().move(len(level[0]) * tile_width - 400, 400)
 
 
@@ -103,8 +113,9 @@ class Player(pygame.sprite.Sprite):
                     frame_location, self.rect.size)))
 
     def update(self, new_x, new_y):
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
+        if Jump is False:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
         player.rect.x += 24
 
 
@@ -161,7 +172,6 @@ def end_level1():
                 player, level_x, level_y = generate_level(level)
                 fish = Fish(0, 0)
                 start_screen()
-
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -255,7 +265,7 @@ def start_screen():
 
     fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font(None, 40)
     text_coord = 50
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
@@ -294,6 +304,7 @@ def start_screen():
             if fish.rect.x <= 0:
                 end_level1()
             if Jump is True:
+                player.image = load_image('cat_jumped.png')
                 player.rect.y -= jump_count
                 if jump_count > -jump_max:
                     jump_count -= 1
@@ -310,12 +321,14 @@ def start_screen():
                 all_sprites.update(player.rect.x, player.rect.y)
             all_sprites.draw(screen)
             k += 1
+            health_counter = font.render(f'Жизни: {Health}', False, 'black')
+            screen.blit(health_counter, (850, 50))
         pygame.display.flip()
         clock.tick(FPS)
 
+
 k = k ** 2
 cam_speed = cam_speed
-
 
 if __name__ == '__main__':
     level = load_level('level_1.map')
