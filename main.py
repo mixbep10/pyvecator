@@ -78,7 +78,7 @@ class Fish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
-        self.rect = self.image.get_rect().move(len(level[0]) * tile_width, 400)
+        self.rect = self.image.get_rect().move(len(level[0]) * tile_width - 400, 400)
 
 
 class Player(pygame.sprite.Sprite):
