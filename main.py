@@ -362,6 +362,9 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
+            if Health < 0:
+                print('Вы проиграли')
+                terminate()
             if player.rect.x >= 20 and Jump is False:
                 player.rect.x -= 10
             hits = pygame.sprite.spritecollide(player, fish, True)
