@@ -5,12 +5,13 @@ import pygame
 
 from level2 import level_2
 
-FPS = 1000
+FPS = 90
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
 jump_1 = 'jump1.mp3'
 jump_2 = 'jump2.mp3'
+menu = 'menu.mp3'
 main_track = 'Run with Me Kara.mp3'
 pygame.mixer.music.load(main_track)
 pygame.mixer.music.play()
@@ -164,8 +165,11 @@ def end_level():
     fish, enemys, player, level_x, level_y = generate_level(level, cat_color)
     player.kill()
     player.kill()
-    start_screen()
-    terminate
+    if n > 3:
+        thanks_for_game()
+    else:
+        start_screen()
+    terminate()
 
 
 def end_level1():
@@ -176,6 +180,57 @@ def end_level1():
                   "если готовы продолжить,",
                   "нажмите любую кнопку"]
 
+    fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    camera = Camera()
+    game_begin = False
+    k = 0
+    ship = Ship("fon.jpg", [0, 0])
+    Jump = False
+    while True:
+        if k == 1000:
+            k = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif (event.type == pygame.KEYDOWN or \
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
+                if n > 2:
+                    thanks_for_game()
+                n += 1
+                end_level()
+                cam_speed = cam_speed * 16
+                level = load_level('level_2.map')
+                print(level)
+                player, level_x, level_y = generate_level(level)
+                fish = Fish(0, 0)
+                start_screen()
+
+        pygame.display.flip()
+        clock.tick(FPS)
+    terminate()
+
+
+def thanks_for_game():
+    pygame.mixer.music.pause()
+    thxfg = pygame.mixer.Sound('thxfg.mp3')
+    thxfg.play()
+    pygame.time.wait(7)
+    global n
+    intro_text = ["Ура!",
+                  "Вы прошли все 3 уровня!",
+                  "Спасибо за игру!",
+                  "До свидания"]
     fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
@@ -203,8 +258,7 @@ def end_level1():
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
                 if n > 2:
-                    pygame.quit()
-                    sys.exit()
+                    terminate()
                 n += 1
                 end_level()
                 cam_speed = cam_speed * 16
@@ -213,10 +267,11 @@ def end_level1():
                 player, level_x, level_y = generate_level(level)
                 fish = Fish(0, 0)
                 start_screen()
-
         pygame.display.flip()
         clock.tick(FPS)
-    terminate
+
+    terminate()
+
 
 def game_over():
     global n
@@ -251,9 +306,8 @@ def game_over():
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
-                if n > 2:
-                    pygame.quit()
-                    sys.exit()
+                if n >= 2:
+                    thanks_for_game()
                 n += 1
                 end_level()
                 cam_speed = cam_speed * 16
@@ -265,7 +319,8 @@ def game_over():
 
         pygame.display.flip()
         clock.tick(FPS)
-    terminate
+    terminate()
+
 
 def load_level(filename):
     filename = "data/" + filename
@@ -347,6 +402,10 @@ class Ship(pygame.sprite.Sprite):
 
 def start_screen():
     global Jump, jump_count, cat_color, level, player, Health
+    hit = pygame.mixer.Sound('hit_sound.mp3')
+    menu = pygame.mixer.Sound('menu.mp3')
+    catjb = load_image('cat_jumped.png')
+    catjg = load_image('cat_jumped1.png')
     clr_choosen = False
     level = load_level('level_1.map')
     start_btn = Wardrobe()
@@ -383,12 +442,24 @@ def start_screen():
         color1.draw(750, 200, 'Чёрный', font)
         color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200) and clr_choosen is False:
+            pygame.mixer.music.pause()
+            menu.play()
+            pygame.mixer.music.unpause()
             clr_choosen = True
             cat_color = 'Чёрный'
+            text = font.render(f'Цвет успешно выбран:{cat_color}        Нажмите "Старт" чтобы начать', 1,
+                               pygame.Color('black'))
+            screen.blit(text, (100, 600))
             fish, enemy, player, level_x, level_y = generate_level(level, cat_color)
         if color2.clicked(750, 400) and clr_choosen is False:
             clr_choosen = True
+            pygame.mixer.music.pause()
+            menu.play()
+            pygame.mixer.music.unpause()
             cat_color = 'Серый'
+            text = font.render(f'Цвет успешно выбран:{cat_color}        Нажмите "Старт" чтобы начать', 1,
+                               pygame.Color('black'))
+            screen.blit(text, (100, 600))
             fish, enemy, player, level_x, level_y = generate_level(level, cat_color)
         if start_btn.clicked(400, 700):
             if k == 1000:
@@ -421,7 +492,6 @@ def start_screen():
                 end_level1()
             hits = pygame.sprite.spritecollide(player, enemys, True)
             if hits:
-                hit = pygame.mixer.Sound('hit_sound.mp3')
                 Health -= 1
                 pygame.mixer.music.pause()
                 hit.play()
@@ -429,9 +499,9 @@ def start_screen():
 
             if Jump is True:
                 if cat_color == 'Чёрный':
-                    player.image = load_image('cat_jumped.png')
+                    player.image = catjb
                 else:
-                    player.image = load_image('cat_jumped1.png')
+                    player.image = catjg
                 player.rect.y -= jump_count
                 player.rect.x += 5
                 if jump_count > -jump_max:

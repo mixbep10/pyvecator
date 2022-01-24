@@ -50,6 +50,35 @@ def level_2():
     tile_width = 200
     tile_height = 55
 
+    def thanks_for_game():
+        global n
+        intro_text = ["Ура!",
+                      "Вы прошли все 3 уровня!",
+                      "Спасибо за игру!",
+                      "До свидания"]
+        fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
+        screen.blit(fon, (0, 0))
+        font = pygame.font.Font(None, 30)
+        text_coord = 50
+        for line in intro_text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+
+            text_coord += 10
+            intro_rect.top = text_coord
+            intro_rect.x = 10
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+        camera = Camera()
+        game_begin = False
+        k = 0
+        pygame.mixer.music.pause()
+        thxfg = pygame.mixer.Sound('thxfg.mp3')
+        thxfg.play()
+
+        ship = Ship("fon.jpg", [0, 0])
+        terminate()
+
     def generate_level(level, cat_color):
         for y in range(len(level)):
             for x in range(len(level[y])):
@@ -156,7 +185,7 @@ def level_2():
         player.kill()
         player.kill()
         start_screen()
-        terminate
+        terminate()
 
     def end_level1():
         global n
@@ -168,7 +197,7 @@ def level_2():
 
         fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
         screen.blit(fon, (0, 0))
-        font = pygame.font.Font(None, 30)
+        font = pygame.font.Font(None, 40)
         text_coord = 50
         for line in intro_text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
@@ -192,9 +221,8 @@ def level_2():
                     terminate()
                 elif (event.type == pygame.KEYDOWN or \
                       event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
-                    if n > 2:
-                        pygame.quit()
-                        sys.exit()
+                    if n == 1:
+                        thanks_for_game()
                     n += 1
                     end_level()
                     cam_speed = cam_speed * 16
@@ -206,7 +234,7 @@ def level_2():
 
             pygame.display.flip()
             clock.tick(FPS)
-        terminate
+        terminate()
 
     def load_level(filename):
         filename = "data/" + filename
@@ -284,13 +312,14 @@ def level_2():
 
     def start_screen():
         global Jump, jump_count, cat_color, level, player, Health
+
         clr_choosen = False
         level = load_level('level_1.map')
         start_btn = Wardrobe()
         color1 = Wardrobe()
         color2 = Wardrobe()
         cat_color = 'Чёрный'
-        intro_text = ["ЗАГРУЗКА2", "",
+        intro_text = ["ЗАГРУЗКА", "",
                       "Правила игры",
                       "Кот бежит по крыше",
                       "уворачивайтесь от препятствий посредством прыжка",
@@ -349,14 +378,14 @@ def level_2():
 
             if game_begin:
                 if Health < 0:
-                    print('Вы проиграли')
-                    terminate()
+                    player.kill()
+                    game_over()
                 if player.rect.x >= 20 and Jump is False:
                     player.rect.x -= 10
                 hits = pygame.sprite.spritecollide(player, fish, True)
                 if hits:
                     player.kill()
-                    end_level1()
+                    thanks_for_game()
                 hits = pygame.sprite.spritecollide(player, enemys, True)
                 if hits:
                     hit = pygame.mixer.Sound('hit_sound.mp3')
