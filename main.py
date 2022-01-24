@@ -76,30 +76,35 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y + 370)
 
+
 class Wardrobe():
     def __init__(self):
         self.width = 250
         self.height = 70
-        self.inactive_color = (102,0,255)
+        self.inactive_color = (102, 0, 255)
         self.active_color = (140, 0, 255)
-    def draw(self,x,y,message, font, action=None):
+
+    def draw(self, x, y, message, font, action=None):
         global wardrobe
         mouse = pygame.mouse.get_pos()
         if x < mouse[0] < (x + self.width):
             if y < mouse[1] < (y + self.height):
-                pygame.draw.rect(screen,self.active_color,(x,y ,self.width, self.height))
+                pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
         else:
             pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
         btn_text = font.render(message, 1, pygame.Color('black'))
-        screen.blit(btn_text,(x+45,y+15))
-        action= True
-    def clicked(self,x,y,action=None):
+        screen.blit(btn_text, (x + 45, y + 15))
+        action = True
+
+    def clicked(self, x, y, action=None):
         mouse = pygame.mouse.get_pos()
         clicked = pygame.mouse.get_pressed()
         if x < mouse[0] < (x + self.width):
             if y < mouse[1] < (y + self.height):
                 if clicked[0] == 1 and action is None:
                     return True
+
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
@@ -121,7 +126,7 @@ class Player(pygame.sprite.Sprite):
         if cat_color == 'Чёрный':
             self.image = load_image('cat_anim.png')
         else:
-            self.image = load_image('cat_anim1.png')
+            self.image = load_image('cat_anim2.png')
         self.rect = self.image.get_rect().move(
             tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.frames = []
@@ -318,23 +323,23 @@ def start_screen():
 
     while True:
         col_label = font.render(f'Цвет кота: {cat_color}', 1, pygame.Color('black'))
-        screen.blit(col_label,(750,300))
-        start_btn.draw(400,650,'Старт', font)
+        screen.blit(col_label, (750, 300))
+        start_btn.draw(400, 650, 'Старт', font)
         color1.draw(750, 200, 'Чёрный', font)
         color2.draw(750, 400, 'Рыжий', font)
-        if color1.clicked(750,200):
+        if color1.clicked(750, 200):
             cat_color = 'Чёрный'
-        if color2.clicked(750,400):
+        if color2.clicked(750, 400):
             cat_color = 'Рыжий'
-        if start_btn.clicked(400,700) is True:
+        if start_btn.clicked(400, 700) is True:
             if k == 1000:
                 k = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
-                event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False and start_btn.clicked(400,700) is True:
-                    game_begin = True
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False and start_btn.clicked(400, 700) is True:
+                game_begin = True
 
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
