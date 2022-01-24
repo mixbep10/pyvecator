@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import randomaser
 import pygame
 
 from level2 import level_2
@@ -21,9 +22,9 @@ jump_count = 0
 Health = 9
 Jump = False
 cam_speed = -6
-cat_color = 'Рыжий'
+cat_color = 'Чёрный'
 k = 1.2
-
+n = 1
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -50,7 +51,7 @@ tile_width = 200
 tile_height = 55
 
 
-def generate_level(level):
+def generate_level(level,cat_color):
     new_player, fish, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
@@ -62,7 +63,7 @@ def generate_level(level):
                 Enemy(x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(x, y + 370)
+                new_player = Player(cat_color, x, y + 370)
                 fish = Fish(x, y)
 
     # вернем игрока, а также размер поля в клетках
@@ -121,7 +122,7 @@ class Fish(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, cat_color, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         if cat_color == 'Чёрный':
             self.image = load_image('cat_anim.png')
@@ -167,6 +168,7 @@ def end_level():
 
 
 def end_level1():
+    global n
     intro_text = ["Отлично!", "",
                   "Уровень",
                   "успешно пройден!",
@@ -199,6 +201,10 @@ def end_level1():
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
+                if n > 2:
+                    pygame.quit()
+                    sys.exit()
+                n += 1
                 end_level()
                 cam_speed = cam_speed * 16
                 level = load_level('level_2.map')
@@ -322,15 +328,15 @@ def start_screen():
     fish = Fish(0, 0)
 
     while True:
-        col_label = font.render(f'Цвет кота: {cat_color}', 1, pygame.Color('black'))
-        screen.blit(col_label, (750, 300))
         start_btn.draw(400, 650, 'Старт', font)
         color1.draw(750, 200, 'Чёрный', font)
-        color2.draw(750, 400, 'Рыжий', font)
+        color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200):
             cat_color = 'Чёрный'
+            player.image = load_image('cat_anim.png')
         if color2.clicked(750, 400):
-            cat_color = 'Рыжий'
+            cat_color = 'Серый'
+            player.image = load_image('cat_anim2.png')
         if start_btn.clicked(400, 700) is True:
             if k == 1000:
                 k = 0
@@ -352,10 +358,14 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
+
             if fish.rect.x <= 0:
                 end_level1()
             if Jump is True:
-                player.image = load_image('cat_jumped.png')
+                if cat_color == 'Чёрный':
+                    player.image = load_image('cat_jumped.png')
+                else:
+                    player.image = load_image('cat_jumped1.png')
                 player.rect.y -= jump_count
                 if jump_count > -jump_max:
                     jump_count -= 1
@@ -384,6 +394,6 @@ cam_speed = cam_speed
 if __name__ == '__main__':
     level = load_level('level_1.map')
     print(level)
-    player, level_x, level_y = generate_level(level)
+    player, level_x, level_y = generate_level(level,cat_color)
     fish = Fish(0, 0)
     start_screen()
