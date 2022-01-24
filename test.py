@@ -1,12 +1,11 @@
 import os
 import random
 import sys
-import randomaser
 import pygame
 
 from level2 import level_2
 
-FPS = 60
+FPS = 90
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -17,15 +16,13 @@ pygame.mixer.music.load(main_track)
 pygame.mixer.music.play()
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
-jump_max = 30
+jump_max = 20
 jump_count = 0
 Health = 9
 Jump = False
-enemys = pygame.sprite.Group()
 cam_speed = -6
-cat_color = 'Чёрный'
-k = 1.2
 n = 1
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -41,7 +38,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 player = None
-fish = pygame.sprite.Group()
+fish = None
 
 tile_images = {
     'wall': load_image('box.png'),
@@ -52,7 +49,8 @@ tile_width = 200
 tile_height = 55
 
 
-def generate_level(level,cat_color):
+def generate_level(level):
+    new_player, fish, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -60,15 +58,14 @@ def generate_level(level,cat_color):
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
-                enemy = Enemy(x, y)
-                enemys.add(enemy)
+                Enemy(x, y)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
-                new_player = Player(cat_color, x, y + 370)
-                fish.add(Fish(x, y))
+                new_player = Player(x, y + 370)
+                fish = Fish(x, y)
 
     # вернем игрока, а также размер поля в клетках
-    return fish,enemys, new_player, x, y
+    return new_player, x, y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -77,34 +74,6 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(load_image('dog.png'), (150, 100))
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y + 370)
-
-
-class Wardrobe():
-    def __init__(self):
-        self.width = 250
-        self.height = 70
-        self.inactive_color = (102, 0, 255)
-        self.active_color = (140, 0, 255)
-
-    def draw(self, x, y, message, font, action=None):
-        global wardrobe
-        mouse = pygame.mouse.get_pos()
-        if x < mouse[0] < (x + self.width):
-            if y < mouse[1] < (y + self.height):
-                pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
-        else:
-            pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
-        btn_text = font.render(message, 1, pygame.Color('black'))
-        screen.blit(btn_text, (x + 45, y + 15))
-        action = True
-
-    def clicked(self, x, y, action=None):
-        mouse = pygame.mouse.get_pos()
-        clicked = pygame.mouse.get_pressed()
-        if x < mouse[0] < (x + self.width):
-            if y < mouse[1] < (y + self.height):
-                if clicked[0] == 1 and action is None:
-                    return True
 
 
 class Tile(pygame.sprite.Sprite):
@@ -123,12 +92,9 @@ class Fish(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, cat_color, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        if cat_color == 'Чёрный':
-            self.image = load_image('cat_anim.png')
-        else:
-            self.image = load_image('cat_anim2.png')
+        self.image = load_image('cat_anim.png')
         self.rect = self.image.get_rect().move(
             tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.frames = []
@@ -161,11 +127,11 @@ def terminate():
 def end_level():
     level = load_level('level_2.map')
     print(level)
-    fish, enemys, player, level_x, level_y = generate_level(level,cat_color)
-    player.kill()
+    player, level_x, level_y = generate_level(level)
+    fish = Fish(0, 0)
     player.kill()
     start_screen()
-    terminate
+
 
 
 def end_level1():
@@ -183,7 +149,6 @@ def end_level1():
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
         intro_rect = string_rendered.get_rect()
-
         text_coord += 10
         intro_rect.top = text_coord
         intro_rect.x = 10
@@ -207,7 +172,6 @@ def end_level1():
                     sys.exit()
                 n += 1
                 end_level()
-                cam_speed = cam_speed * 16
                 level = load_level('level_2.map')
                 print(level)
                 player, level_x, level_y = generate_level(level)
@@ -216,7 +180,7 @@ def end_level1():
 
         pygame.display.flip()
         clock.tick(FPS)
-    terminate
+
 
 
 def load_level(filename):
@@ -298,13 +262,7 @@ class Ship(pygame.sprite.Sprite):
 
 
 def start_screen():
-    global Jump, jump_count, cat_color, level, player, Health
-    clr_choosen = False
-    level = load_level('level_1.map')
-    start_btn = Wardrobe()
-    color1 = Wardrobe()
-    color2 = Wardrobe()
-    cat_color = 'Чёрный'
+    global Jump, jump_count
     intro_text = ["ЗАГРУЗКА2", "",
                   "Правила игры",
                   "Кот бежит по крыше",
@@ -315,7 +273,6 @@ def start_screen():
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 40)
     text_coord = 50
-
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
         intro_rect = string_rendered.get_rect()
@@ -328,29 +285,15 @@ def start_screen():
     game_begin = False
     k = 0
     ship = Ship("fon.jpg", [0, 0])
-
-
+    fish = Fish(0, 0)
     while True:
-        level = load_level('level_1.map')
-        start_btn.draw(400, 650, 'Старт', font)
-        color1.draw(750, 200, 'Чёрный', font)
-        color2.draw(750, 400, 'Серый', font)
-        if color1.clicked(750, 200) and clr_choosen is False:
-            clr_choosen = True
-            cat_color = 'Чёрный'
-            fish,enemy,player, level_x, level_y = generate_level(level, cat_color)
-        if color2.clicked(750, 400) and clr_choosen is False:
-            clr_choosen = True
-            cat_color = 'Серый'
-            fish,enemy, player, level_x, level_y = generate_level(level, cat_color)
-        if start_btn.clicked(400, 700):
-            if k == 1000:
-                k = 0
+        if k == 1000:
+            k = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
-                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False and start_btn.clicked(400, 700) is True:
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
                 game_begin = True
 
 
@@ -364,23 +307,10 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
-            hits = pygame.sprite.spritecollide(player, fish, True)
-            if hits:
-                player.kill()
+            if fish.rect.x <= 0:
                 end_level1()
-            hits = pygame.sprite.spritecollide(player, enemys, True)
-            if hits:
-                hit = pygame.mixer.Sound('hit_sound.mp3')
-                Health -=1
-                pygame.mixer.music.pause()
-                hit.play()
-                pygame.mixer.music.unpause()
-
             if Jump is True:
-                if cat_color == 'Чёрный':
-                    player.image = load_image('cat_jumped.png')
-                else:
-                    player.image = load_image('cat_jumped1.png')
+                player.image = load_image('cat_jumped.png')
                 player.rect.y -= jump_count
                 if jump_count > -jump_max:
                     jump_count -= 1
@@ -403,8 +333,11 @@ def start_screen():
         clock.tick(FPS)
 
 
-k = k ** 2
-cam_speed = cam_speed
+
 
 if __name__ == '__main__':
+    level = load_level('level_1.map')
+    print(level)
+    player, level_x, level_y = generate_level(level)
+    fish = Fish(0, 0)
     start_screen()
