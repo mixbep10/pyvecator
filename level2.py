@@ -1,5 +1,5 @@
 import os
-import random
+import randomaser
 import sys
 import pygame
 

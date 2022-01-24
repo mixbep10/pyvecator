@@ -21,7 +21,7 @@ jump_count = 0
 Health = 9
 Jump = False
 cam_speed = -6
-k = 1.2
+n = 1
 
 
 def load_image(name, colorkey=None):
@@ -131,10 +131,11 @@ def end_level():
     fish = Fish(0, 0)
     player.kill()
     start_screen()
-    terminate
+
 
 
 def end_level1():
+    global n
     intro_text = ["Отлично!", "",
                   "Уровень",
                   "успешно пройден!",
@@ -166,8 +167,11 @@ def end_level1():
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
+                if n > 2:
+                    pygame.quit()
+                    sys.exit()
+                n += 1
                 end_level()
-                cam_speed = cam_speed * 16
                 level = load_level('level_2.map')
                 print(level)
                 player, level_x, level_y = generate_level(level)
@@ -176,7 +180,7 @@ def end_level1():
 
         pygame.display.flip()
         clock.tick(FPS)
-    terminate
+
 
 
 def load_level(filename):
@@ -329,8 +333,7 @@ def start_screen():
         clock.tick(FPS)
 
 
-k = k ** 2
-cam_speed = cam_speed
+
 
 if __name__ == '__main__':
     level = load_level('level_1.map')
