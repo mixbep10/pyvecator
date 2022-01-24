@@ -297,7 +297,8 @@ class Ship(pygame.sprite.Sprite):
 
 
 def start_screen():
-    global Jump, jump_count, cat_color
+    global Jump, jump_count, cat_color, level, player
+    level = load_level('level_1.map')
     start_btn = Wardrobe()
     color1 = Wardrobe()
     color2 = Wardrobe()
@@ -325,18 +326,21 @@ def start_screen():
     game_begin = False
     k = 0
     ship = Ship("fon.jpg", [0, 0])
-    fish = Fish(0, 0)
+
 
     while True:
+        level = load_level('level_1.map')
         start_btn.draw(400, 650, 'Старт', font)
         color1.draw(750, 200, 'Чёрный', font)
         color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200):
             cat_color = 'Чёрный'
-            player.image = load_image('cat_anim.png')
+            player, level_x, level_y = generate_level(level, cat_color)
+            fish = Fish(0, 0)
         if color2.clicked(750, 400):
             cat_color = 'Серый'
-            player.image = load_image('cat_anim2.png')
+            player, level_x, level_y = generate_level(level, cat_color)
+            fish = Fish(0, 0)
         if start_btn.clicked(400, 700):
             if k == 1000:
                 k = 0
@@ -392,8 +396,4 @@ k = k ** 2
 cam_speed = cam_speed
 
 if __name__ == '__main__':
-    level = load_level('level_1.map')
-    print(level)
-    player, level_x, level_y = generate_level(level,cat_color)
-    fish = Fish(0, 0)
     start_screen()
