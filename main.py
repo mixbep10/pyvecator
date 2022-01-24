@@ -5,7 +5,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 60
+FPS = 90
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -21,6 +21,7 @@ jump_count = 0
 Health = 9
 Jump = False
 cam_speed = -6
+cat_color = 'Рыжий'
 k = 1.2
 
 
@@ -75,7 +76,30 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y + 370)
 
-
+class Wardrobe():
+    def __init__(self):
+        self.width = 250
+        self.height = 70
+        self.inactive_color = (102,0,255)
+        self.active_color = (140, 0, 255)
+    def draw(self,x,y,message, font, action=None):
+        global wardrobe
+        mouse = pygame.mouse.get_pos()
+        if x < mouse[0] < (x + self.width):
+            if y < mouse[1] < (y + self.height):
+                pygame.draw.rect(screen,self.active_color,(x,y ,self.width, self.height))
+        else:
+            pygame.draw.rect(screen, self.inactive_color, (x, y, self.width, self.height))
+        btn_text = font.render(message, 1, pygame.Color('black'))
+        screen.blit(btn_text,(x+45,y+15))
+        action= True
+    def clicked(self,x,y,action=None):
+        mouse = pygame.mouse.get_pos()
+        clicked = pygame.mouse.get_pressed()
+        if x < mouse[0] < (x + self.width):
+            if y < mouse[1] < (y + self.height):
+                if clicked[0] == 1 and action is None:
+                    return True
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
@@ -94,7 +118,10 @@ class Fish(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = load_image('cat_anim.png')
+        if cat_color == 'Чёрный':
+            self.image = load_image('cat_anim.png')
+        else:
+            self.image = load_image('cat_anim1.png')
         self.rect = self.image.get_rect().move(
             tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.frames = []
@@ -131,11 +158,12 @@ def end_level():
     fish = Fish(0, 0)
     player.kill()
     start_screen()
+    terminate
 
 
 def end_level1():
     intro_text = ["Отлично!", "",
-                  "Первый уровень",
+                  "Уровень",
                   "успешно пройден!",
                   "если готовы продолжить,",
                   "нажмите любую кнопку"]
@@ -147,6 +175,7 @@ def end_level1():
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
         intro_rect = string_rendered.get_rect()
+
         text_coord += 10
         intro_rect.top = text_coord
         intro_rect.x = 10
@@ -175,6 +204,7 @@ def end_level1():
 
         pygame.display.flip()
         clock.tick(FPS)
+    terminate
 
 
 def load_level(filename):
@@ -256,8 +286,12 @@ class Ship(pygame.sprite.Sprite):
 
 
 def start_screen():
-    global Jump, jump_count
-    intro_text = ["ЗАСТАВКА", "",
+    global Jump, jump_count, cat_color
+    start_btn = Wardrobe()
+    color1 = Wardrobe()
+    color2 = Wardrobe()
+    cat_color = 'Чёрный'
+    intro_text = ["ЗАГРУЗКА2", "",
                   "Правила игры",
                   "Кот бежит по крыше",
                   "уворачивайтесь от препятствий посредством прыжка",
@@ -267,6 +301,7 @@ def start_screen():
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 40)
     text_coord = 50
+
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('black'))
         intro_rect = string_rendered.get_rect()
@@ -280,15 +315,26 @@ def start_screen():
     k = 0
     ship = Ship("fon.jpg", [0, 0])
     fish = Fish(0, 0)
+
     while True:
-        if k == 1000:
-            k = 0
+        col_label = font.render(f'Цвет кота: {cat_color}', 1, pygame.Color('black'))
+        screen.blit(col_label,(750,300))
+        start_btn.draw(400,650,'Старт', font)
+        color1.draw(750, 200, 'Чёрный', font)
+        color2.draw(750, 400, 'Рыжий', font)
+        if color1.clicked(750,200):
+            cat_color = 'Чёрный'
+        if color2.clicked(750,400):
+            cat_color = 'Рыжий'
+        if start_btn.clicked(400,700) is True:
+            if k == 1000:
+                k = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif (event.type == pygame.KEYDOWN or \
-                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
-                game_begin = True
+                event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False and start_btn.clicked(400,700) is True:
+                    game_begin = True
 
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
