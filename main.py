@@ -5,7 +5,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 120
+FPS = 1000
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -118,8 +118,8 @@ class Tile(pygame.sprite.Sprite):
 class Fish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = pygame.transform.scale(load_image('fish.png'), (75, 50))
-        self.rect = self.image.get_rect().move(len(level[0]) * tile_width - 400, 400)
+        self.image = pygame.transform.scale(load_image('fish.png'), (150, 100))
+        self.rect = self.image.get_rect().move(len(level[0]) * tile_width - 400, 350)
 
 
 class Player(pygame.sprite.Sprite):
@@ -218,6 +218,54 @@ def end_level1():
         clock.tick(FPS)
     terminate
 
+def game_over():
+    global n
+    intro_text = ["О нет!", "",
+                  "Вы проиграли",
+                  "Нажмите любую кнопку",
+                  "для выхода из игры"]
+
+    fon = pygame.transform.scale(load_image('unnamed.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    camera = Camera()
+    game_begin = False
+    k = 0
+    ship = Ship("fon.jpg", [0, 0])
+    Jump = False
+    while True:
+        if k == 1000:
+            k = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif (event.type == pygame.KEYDOWN or \
+                  event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False:
+                if n > 2:
+                    pygame.quit()
+                    sys.exit()
+                n += 1
+                end_level()
+                cam_speed = cam_speed * 16
+                level = load_level('level_2.map')
+                print(level)
+                player, level_x, level_y = generate_level(level)
+                fish = Fish(0, 0)
+                start_screen()
+
+        pygame.display.flip()
+        clock.tick(FPS)
+    terminate
 
 def load_level(filename):
     filename = "data/" + filename
@@ -305,8 +353,8 @@ def start_screen():
     color1 = Wardrobe()
     color2 = Wardrobe()
     cat_color = 'Чёрный'
-    intro_text = ["ЗАГРУЗКА2", "",
-                  "Правила игры",
+    intro_text = ["ЗАГРУЗКА", "",
+                  "Правила игры:",
                   "Кот бежит по крыше",
                   "уворачивайтесь от препятствий посредством прыжка",
                   "Удачи!"]
@@ -363,8 +411,8 @@ def start_screen():
 
         if game_begin:
             if Health < 0:
-                print('Вы проиграли')
-                terminate()
+                player.kill()
+                game_over()
             if player.rect.x >= 20 and Jump is False:
                 player.rect.x -= 10
             hits = pygame.sprite.spritecollide(player, fish, True)
