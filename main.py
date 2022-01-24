@@ -21,6 +21,7 @@ jump_max = 20
 jump_count = 0
 Health = 9
 Jump = False
+enemys = pygame.sprite.Group()
 cam_speed = -6
 cat_color = 'Чёрный'
 k = 1.2
@@ -52,7 +53,6 @@ tile_height = 55
 
 
 def generate_level(level,cat_color):
-    new_player, fish, x, y = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -60,14 +60,15 @@ def generate_level(level,cat_color):
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '$':
-                Enemy(x, y)
+                enemy = Enemy(x, y)
+                enemys.add(enemy)
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(cat_color, x, y + 370)
                 fish = Fish(x, y)
 
     # вернем игрока, а также размер поля в клетках
-    return new_player, x, y
+    return enemys, new_player, x, y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -88,6 +89,7 @@ class Wardrobe():
     def draw(self, x, y, message, font, action=None):
         global wardrobe
         mouse = pygame.mouse.get_pos()
+
         if x < mouse[0] < (x + self.width):
             if y < mouse[1] < (y + self.height):
                 pygame.draw.rect(screen, self.active_color, (x, y, self.width, self.height))
@@ -297,7 +299,7 @@ class Ship(pygame.sprite.Sprite):
 
 
 def start_screen():
-    global Jump, jump_count, cat_color, level, player
+    global Jump, jump_count, cat_color, level, player, Health
     level = load_level('level_1.map')
     start_btn = Wardrobe()
     color1 = Wardrobe()
@@ -335,11 +337,11 @@ def start_screen():
         color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200):
             cat_color = 'Чёрный'
-            player, level_x, level_y = generate_level(level, cat_color)
+            enemy,player, level_x, level_y = generate_level(level, cat_color)
             fish = Fish(0, 0)
         if color2.clicked(750, 400):
             cat_color = 'Серый'
-            player, level_x, level_y = generate_level(level, cat_color)
+            enemy, player, level_x, level_y = generate_level(level, cat_color)
             fish = Fish(0, 0)
         if start_btn.clicked(400, 700):
             if k == 1000:
@@ -362,9 +364,16 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
-
             if fish.rect.x <= 0:
                 end_level1()
+            hits = pygame.sprite.spritecollide(player, enemys, True)
+            if hits:
+                hit = pygame.mixer.Sound('hit_sound.mp3')
+                Health -=1
+                pygame.mixer.music.pause()
+                hit.play()
+                pygame.mixer.music.unpause()
+
             if Jump is True:
                 if cat_color == 'Чёрный':
                     player.image = load_image('cat_jumped.png')
