@@ -337,7 +337,7 @@ def start_screen():
         if color2.clicked(750, 400):
             cat_color = 'Серый'
             player.image = load_image('cat_anim2.png')
-        if start_btn.clicked(400, 700) is True:
+        if start_btn.clicked(400, 700):
             if k == 1000:
                 k = 0
         for event in pygame.event.get():
