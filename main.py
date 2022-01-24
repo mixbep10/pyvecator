@@ -6,7 +6,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 60
+FPS = 120
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -26,6 +26,7 @@ cam_speed = -6
 cat_color = 'Чёрный'
 k = 1.2
 n = 1
+
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -329,10 +330,9 @@ def start_screen():
     k = 0
     ship = Ship("fon.jpg", [0, 0])
 
-
     while True:
         level = load_level('level_1.map')
-        start_btn.draw(400, 650, 'Старт', font)
+        start_btn.draw(400, 700, 'Старт', font)
         color1.draw(750, 200, 'Чёрный', font)
         color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200) and clr_choosen is False:
@@ -353,7 +353,6 @@ def start_screen():
                   event.type == pygame.MOUSEBUTTONDOWN) and game_begin is False and start_btn.clicked(400, 700) is True:
                 game_begin = True
 
-
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 sound_jump_up = pygame.mixer.Sound(jump_1)
                 if Jump is False:
@@ -364,6 +363,8 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
+            if player.rect.x >= 20 and Jump is False:
+                player.rect.x -= 10
             hits = pygame.sprite.spritecollide(player, fish, True)
             if hits:
                 player.kill()
@@ -382,12 +383,12 @@ def start_screen():
                 else:
                     player.image = load_image('cat_jumped1.png')
                 player.rect.y -= jump_count
+                player.rect.x += 5
                 if jump_count > -jump_max:
                     jump_count -= 1
                 else:
                     Jump = False
             screen.fill('white')
-
             screen.blit(ship.image, ship.rect)
             camera.update(player)
             # обновляем положение всех спрайтов
@@ -402,9 +403,6 @@ def start_screen():
         pygame.display.flip()
         clock.tick(FPS)
 
-
-k = k ** 2
-cam_speed = cam_speed
 
 if __name__ == '__main__':
     start_screen()
