@@ -1,7 +1,6 @@
 import os
 import random
 import sys
-import randomaser
 import pygame
 
 from level2 import level_2
@@ -53,7 +52,7 @@ tile_width = 200
 tile_height = 55
 
 
-def generate_level(level,cat_color):
+def generate_level(level, cat_color):
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -69,7 +68,7 @@ def generate_level(level,cat_color):
                 fish.add(Fish(x, y))
 
     # вернем игрока, а также размер поля в клетках
-    return fish,enemys, new_player, x, y
+    return fish, enemys, new_player, x, y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -162,7 +161,7 @@ def terminate():
 def end_level():
     level = load_level('level_2.map')
     print(level)
-    fish, enemys, player, level_x, level_y = generate_level(level,cat_color)
+    fish, enemys, player, level_x, level_y = generate_level(level, cat_color)
     player.kill()
     player.kill()
     start_screen()
@@ -338,11 +337,11 @@ def start_screen():
         if color1.clicked(750, 200) and clr_choosen is False:
             clr_choosen = True
             cat_color = 'Чёрный'
-            fish,enemy,player, level_x, level_y = generate_level(level, cat_color)
+            fish, enemy, player, level_x, level_y = generate_level(level, cat_color)
         if color2.clicked(750, 400) and clr_choosen is False:
             clr_choosen = True
             cat_color = 'Серый'
-            fish,enemy, player, level_x, level_y = generate_level(level, cat_color)
+            fish, enemy, player, level_x, level_y = generate_level(level, cat_color)
         if start_btn.clicked(400, 700):
             if k == 1000:
                 k = 0
@@ -372,7 +371,7 @@ def start_screen():
             hits = pygame.sprite.spritecollide(player, enemys, True)
             if hits:
                 hit = pygame.mixer.Sound('hit_sound.mp3')
-                Health -=1
+                Health -= 1
                 pygame.mixer.music.pause()
                 hit.play()
                 pygame.mixer.music.unpause()
