@@ -6,7 +6,7 @@ import pygame
 
 from level2 import level_2
 
-FPS = 90
+FPS = 1000
 SIZE = WIDTH, HEIGHT = 1024, 768
 a, b = WIDTH, HEIGHT
 pygame.init()
@@ -41,7 +41,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
 player = None
-fish = None
+fish = pygame.sprite.Group()
 
 tile_images = {
     'wall': load_image('box.png'),
@@ -65,10 +65,10 @@ def generate_level(level,cat_color):
             elif level[y][x] == '@':
                 Tile('empty', x, y)
                 new_player = Player(cat_color, x, y + 370)
-                fish = Fish(x, y)
+                fish.add(Fish(x, y))
 
     # вернем игрока, а также размер поля в клетках
-    return enemys, new_player, x, y
+    return fish,enemys, new_player, x, y
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -151,7 +151,7 @@ class Player(pygame.sprite.Sprite):
         if Jump is False:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
-        player.rect.x += 24
+        player.rect.x += 12
 
 
 def terminate():
@@ -162,8 +162,7 @@ def terminate():
 def end_level():
     level = load_level('level_2.map')
     print(level)
-    player, level_x, level_y = generate_level(level)
-    fish = Fish(0, 0)
+    fish, enemys, player, level_x, level_y = generate_level(level,cat_color)
     player.kill()
     start_screen()
     terminate
@@ -337,12 +336,10 @@ def start_screen():
         color2.draw(750, 400, 'Серый', font)
         if color1.clicked(750, 200):
             cat_color = 'Чёрный'
-            enemy,player, level_x, level_y = generate_level(level, cat_color)
-            fish = Fish(0, 0)
+            fish,enemy,player, level_x, level_y = generate_level(level, cat_color)
         if color2.clicked(750, 400):
             cat_color = 'Серый'
-            enemy, player, level_x, level_y = generate_level(level, cat_color)
-            fish = Fish(0, 0)
+            fish,enemy, player, level_x, level_y = generate_level(level, cat_color)
         if start_btn.clicked(400, 700):
             if k == 1000:
                 k = 0
@@ -364,7 +361,8 @@ def start_screen():
                     jump_count = jump_max
 
         if game_begin:
-            if fish.rect.x <= 0:
+            hits = pygame.sprite.spritecollide(player, fish, True)
+            if hits:
                 end_level1()
             hits = pygame.sprite.spritecollide(player, enemys, True)
             if hits:
